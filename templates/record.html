@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head><title>Video Recording Page</title>
+<link rel="stylesheet" href="/static/style.css"></head>
+<div class="topnav">
+    <ul>
+    <li>    <a class="active" href="/home">Home</a></li>
+        <li><a href="/upload">Upload</a></li>
+        <li><a href="/record">Record</a></li>
+        <li><a href="/result">Result</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/login">Login</a></li>
+        <li><a href="/register">Register</a></li>
+    </ul>
+</div>
+
+<h1>Video Recording Page</h1>
+<body>
+<br>
+
+<button id="btn-start-recording">Start Recording</button>
+<button id="btn-stop-recording" disabled>Stop Recording</button>
+
+<hr>
+<video controls autoplay playsinline></video>
+
+<!-- <script type="text/javascript" src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script> -->
+<script src="/static/RecordRTC.js"></script>
+<script>
+var video = document.querySelector('video');
+
+function captureCamera(callback) {
+    navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function(camera) {
+        callback(camera);
+    }).catch(function(error) {
+        alert('Unable to capture your camera. Please check console logs.');
+        console.error(error);
+    });
+}
+
+function stopRecordingCallback() {
+    video.src = video.srcObject = null;
+    video.muted = false;
+    video.volume = 1;
+    video.src = URL.createObjectURL(recorder.getBlob());
+
+    let formData = new FormData();
+    formData.append("file", recorder.getBlob());
+    fetch('/record_upload_success', {method: "POST", body: formData});
+
+    recorder.camera.stop();
+    recorder.destroy();
+    recorder = null;
+}
+
+var recorder; // globally accessible
+
+document.getElementById('btn-start-recording').onclick = function() {
+    this.disabled = true;
+    captureCamera(function(camera) {
+        video.muted = true;
+        video.volume = 0;
+        video.srcObject = camera;
+
+        recorder = RecordRTC(camera, {
+            type: 'video'
+        });
+
+        recorder.startRecording();
+
+        // release camera on stopRecording
+        recorder.camera = camera;
+
+        document.getElementById('btn-stop-recording').disabled = false;
+    });
+};
+
+document.getElementById('btn-stop-recording').onclick = function() {
+    this.disabled = true;
+    recorder.stopRecording(stopRecordingCallback);
+};
+</script>
+
+<footer style="margin-top: 20px;"><small id="send-message"></small></footer>
+<script src="https://www.webrtc-experiment.com/common.js"></script>
+<p> Click on Result after sometime(after stopping recording) to see result.(refresh if needed to see latest result)
+<p> Download video for futher use(if any) after stopping recording.</p>
+
+</body>
+</html>
