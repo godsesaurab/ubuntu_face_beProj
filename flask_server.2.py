@@ -1,7 +1,7 @@
 from flask import *  
 import os 
-import easygui
-from pathlib import Path 
+# import easygui
+# from pathlib import Path 
 
 app = Flask(__name__) #creating the Flask class object   
 
