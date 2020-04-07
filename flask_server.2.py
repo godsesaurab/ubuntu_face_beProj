@@ -42,7 +42,10 @@ def record_upload_success():
         f = request.files['file']
         f.filename = f.filename+'.avi'  
         f.save('./uploaded_file/'+f.filename)
-        os.system('.\\OpenFace_2.2.0_win_x64\\FeatureExtraction.exe -f "./uploaded_file/'+f.filename+'" -aus -mloc "model/main_ceclm_general.txt"')
+        os.system('docker cp ./uploaded_file/'+f.filename+' openface:/home/openface-build/build/bin/uploads/')
+        os.system('docker exec -it openface ./build/bin/FeatureExtraction -f "./uploads/'+f.filename+'"-aus -mloc "model/main_ceclm_general.txt"')
+        # os.system('.\\OpenFace_2.2.0_win_x64\\FeatureExtraction.exe -f "./uploaded_file/'+f.filename+'" -aus -mloc "model/main_ceclm_general.txt"')
+        os.system('docker cp openface:/home/openface-build/build/bin/uploads/'+f.filename+' ./processed/')
         filename=Path(f.filename).stem
         os.system('python second.1.py -f .\\processed\\'+filename+'.csv')
         return "Wait and then Go check Result"  
@@ -53,7 +56,10 @@ def upload_success():
     if request.method == 'POST':  
         f = request.files['file']  
         f.save('./uploaded_file/'+f.filename)
-        os.system('.\\OpenFace_2.2.0_win_x64\\FeatureExtraction.exe -f "./uploaded_file/'+f.filename+'" -aus -mloc "model/main_ceclm_general.txt"')
+        os.system('docker cp ./uploaded_file/'+f.filename+' openface:/home/openface-build/build/bin/uploads/')
+        os.system('docker exec -it openface ./build/bin/FeatureExtraction -f "./uploads/'+f.filename+'"-aus -mloc "model/main_ceclm_general.txt"')
+        os.system('docker cp openface:/home/openface-build/build/bin/uploads/'+f.filename+' ./processed/')
+        # os.system('.\\OpenFace_2.2.0_win_x64\\FeatureExtraction.exe -f "./uploaded_file/'+f.filename+'" -aus -mloc "model/main_ceclm_general.txt"')
         filename=Path(f.filename).stem
         os.system('python second.1.py -f .\\processed\\'+filename+'.csv')
         return render_template("upload_success.html", name = f.filename)  
